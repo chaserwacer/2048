@@ -1,0 +1,500 @@
+   import java.util.*;
+public class game1
+{
+	public static void main(String[]args)
+	{
+		//Variables
+			Scanner reader = new Scanner(System.in);
+			String direction = "";
+			int[][] board = {{0,0,0,0},
+							 {0,0,0,0},
+							 {0,0,0,0},
+							 {0,0,0,0}};
+			int[][]board2;
+			int score = 0;
+			int shifter= 0;
+
+
+		while(score < 1500)
+		{
+			score=0;
+			//Start Game
+				System.out.println("This is 2048. The board is below. Use WASD to shift around. Other inputs invalid");
+				addNum(board);
+				addNum(board);
+
+				board2 = copyArray(board);
+				score += moveLeft(board);
+					if(!checkSame(board, board2))
+				addNum(board);
+
+				board2 = copyArray(board);
+				score += moveUp(board);
+					if(!checkSame(board, board2))
+				addNum(board);
+
+			//Solve Game
+				board2 = copyArray(board);
+				score += moveLeft(board);
+					if(!checkSame(board, board2))
+							addNum(board);
+
+				board2 = copyArray(board);
+				score += moveUp(board);
+					if(!checkSame(board, board2))
+							addNum(board);
+
+				while(checkOpen(board))
+				{
+					//Copy array
+					board2 = copyArray(board);
+
+					//Move up until unable
+					while(checkSame(board, board2))
+					{
+						score += moveUp(board);
+						if(!checkSame(board, board2)){System.out.println("shifted up");addNum(board);printBoard(board);}
+						else{break;}
+						board2 = copyArray(board);
+					}
+
+					board2 = copyArray(board);
+
+					//Move left until unable
+					while(checkSame(board, board2))
+					{
+						score += moveLeft(board);
+						if(!checkSame(board, board2)){System.out.println("shifted left");addNum(board);printBoard(board);}
+						else{break;}
+						board2 = copyArray(board);
+					}
+
+
+					board2 = copyArray(board);
+
+					while(checkSame(board, board2))
+					{
+						//Move down
+						score += moveDown(board);
+						if(!checkSame(board, board2)){	//if it moved down try and move it back up
+							System.out.println("shifted down");addNum(board);printBoard(board);board2 = copyArray(board);
+							score += moveUp(board);if(!checkSame(board, board2)){System.out.println("shifted up");addNum(board);printBoard(board);}
+							break;}
+
+						//Move Right
+						score += moveRight(board);
+						if(!checkSame(board, board2)){	//if it moved right try and move it left
+							System.out.println("shifted up");addNum(board);printBoard(board);board2 = copyArray(board);
+							score += moveLeft(board);if(!checkSame(board, board2)){System.out.println("shifted left");addNum(board);printBoard(board);}
+						break;}
+
+
+						board2 = copyArray(board);
+
+						if(!checkOpen(board))break;
+					}
+
+
+
+					//make it do another method at the end it might need to go left
+					//ADD CHECK SAME TO ORIGINAL GAME
+
+
+
+					//Output Board and Score
+					System.out.println("Score: " + score);
+					printBoard(board);
+				}//Check Open Loop End
+
+				//Lost Game Message
+				System.out.println("\n\nGame over\nFinal Score: " + score);
+				resetBoard(board);
+
+		}//End big loop
+
+	}//End Main
+//Methods
+
+static void resetBoard(int[][]board)
+{
+	//Method will reset board
+	for(int i = 0; i<4; i++)
+	{
+		for(int x = 0; x<4; x++)
+		{
+			board[i][x] = 0;
+		}
+	}
+}
+
+static int[][] copyArray(int[][]board)
+{
+	//Method will copy the contents of an array into a new array
+	int[][] board2 = new int[4][4];
+
+	for(int i = 0; i<4; i++)
+	{
+		for(int x = 0; x<4; x++)
+		{
+			board2[i][x] = board[i][x];
+		}
+	}
+
+	//Return Array
+	return board2;
+}//copyArayEnd
+
+
+static void addNum(int[][]board)
+{
+	//Method will add a number to a random open square
+		//variables
+			int randRow;
+			int randCol;
+			Random rand = new Random();
+			int addedNumber = 2;
+			int placeHolder;
+
+		//Calculate what number to add
+			placeHolder = rand.nextInt(10);
+			if(placeHolder == 9)
+				addedNumber = 4;
+
+		//Loop through board until empty spot is filled
+			while(checkOpen(board))
+			{
+
+				randRow = rand.nextInt(4);
+				randCol = rand.nextInt(4);
+
+				if(board[randRow][randCol] == 0)
+				{
+					board[randRow][randCol] = addedNumber;
+					break;
+				}
+			}
+}//add num end
+
+
+static boolean checkOpen(int[][]board)
+{
+	//Method will check if there is an open space, return true if there is one
+		for(int i = 0; i<4; i++)
+		{
+			for(int x = 0; x<4; x++)
+			{
+				if(board[i][x] == 0)
+					return true;
+			}
+		}
+
+		//Now we need to check if there are any possible matches
+		for(int i = 0; i<3; i++)
+		{
+			for(int x = 0; x<4; x++)
+			{
+				if(board[i][x]==board[i+1][x])
+					return true;
+			}
+		}
+		for(int i = 3; i>0; i--)
+		{
+			for(int x = 0; x<4; x++)
+			{
+				if(board[i][x]==board[i-1][x])
+					return true;
+			}
+		}
+
+		for(int i = 0; i<4; i++)	//Column
+		{
+			for(int x = 0; x<3; x++)	//Row
+			{
+				if(board[i][x+1] == board[i][x])
+				return true;
+			}
+		}
+
+		for(int i = 0; i<4; i++)	//Column
+		{
+			for(int x = 3; x>0; x--)	//Row
+			{
+				if(board[i][x-1] == board[i][x])
+				return true;
+			}
+		}
+
+		return false;
+}//check open end
+
+
+static int moveLeft(int[][]board)
+{
+	//Moves numbers left if space, adds numbers if they are the same, adds to score if needed
+	int count = 0; //This variabe is used later to prevent the method from combining more numbers than it is supposed to
+	int score = 0;
+
+	//Enter large loop, repeated three times to make sure all numbers are moved
+	for(int z=0; z<3; z++)
+	{
+		count = 0;
+		for(int i = 0; i<4; i++)	//Column
+		{
+			count = 0;
+			for(int x = 0; x<3; x++)	//Row
+			{
+				if(board[i][x] == 0)
+				{
+					if(board[i][x+1] != 0)	//If open space and the number to the right is zero, shift left
+					{
+						board[i][x]=board[i][x+1];
+						board[i][x+1] = 0;
+					}
+				}
+				else if(board[i][x+1] == board[i][x])	//If the numbers are the same, attempt to add them
+				{
+					if(count < 2 && board[i][x]>0)	//Add numbers unless there have been more additions than allowed
+					{
+						board[i][x] = -(board[i][x+1]+board[i][x]);
+						board[i][x+1] = 0;
+						count++;
+						score = score + Math.abs(board[i][x]);	//Increment score
+					}
+				}
+			}//Row
+		}//Column
+	}//Large loop
+
+	//Make all values positive
+	for(int i = 0; i<4; i++)
+	{
+		for(int x = 0; x<4; x++)
+		{
+			board[i][x] = Math.abs(board[i][x]);
+		}
+	}
+
+	//Return Score
+	return score;
+}//Left end
+
+
+static int moveRight(int[][]board)
+{
+	//Moves numbers right if space, adds numbers if they are the same, adds to score if needed
+	int count = 0; //This variabe is used later to prevent the method from combining more numbers than it is supposed to
+	int score = 0;
+
+	//Enter large loop, repeated three times to make sure all numbers are moved
+	for(int z=0; z<3; z++)
+	{
+		count = 0;
+		for(int i = 0; i<4; i++)//Column
+		{
+			count = 0;
+			for(int x = 3; x>+0; x--)	//Row
+			{
+				if(board[i][x] == 0)
+				{
+					if(board[i][x-1] != 0)	//If open space and the number to the left is zero, shift right
+					{
+						board[i][x]=board[i][x-1];
+						board[i][x-1] = 0;
+					}
+				}
+				else if(board[i][x-1] == board[i][x])	//If the numbers are the same, attempt to add them
+				{
+					if(count < 2 && board[i][x]>0)	//Add numbers unless there have been more additions than allowed
+					{
+						board[i][x] = -(board[i][x-1]+board[i][x]);
+						board[i][x-1] = 0;
+						count++;
+						score = score + Math.abs(board[i][x]);	//Increment score
+					}
+				}
+			}//Row
+		}//Column
+	}//Large loop
+
+
+	//Make all values positive
+	for(int i = 0; i<4; i++)
+	{
+		for(int x = 0; x<4; x++)
+		{
+			board[i][x] = Math.abs(board[i][x]);
+		}
+	}
+	//Return Score
+	return score;
+}//right end
+
+
+
+static int moveDown(int[][]board)
+{
+	//Moves numbers down if space, adds numbers if they are the same, adds to score if needed
+	int count = 0; //This variabe is used later to prevent the method from combining more numbers than it is supposed to
+	int score = 0;
+	int one = 0, two = 0, three = 0;
+
+	//Enter large loop
+	for(int z=0; z<3; z++)
+	{
+		count = 0;
+		for(int i = 3; i>0; i--)	//column
+		{
+			count = 0;
+			for(int x = 0; x<4; x++)	//row
+			{
+				if(board[i][x] == 0)
+				{
+					if(board[i-1][x] != 0)	//If open space and the number below is zero, shift down
+					{
+						board[i][x]=board[i-1][x];
+						board[i-1][x] = 0;
+					}
+				}
+				else if(board[i-1][x] == board[i][x])	//If the numbers are the same, attempt to add them
+				{
+					if(count < 2 && board[i][x]>0)	//Add numbers unless there have been more additions than allowed
+					{
+						board[i][x] = -(board[i-1][x]+board[i][x]);
+						board[i-1][x] = 0;
+						count++;
+						score = score + Math.abs(board[i][x]);	//Increment score
+					}
+				}
+			}//row
+		}//column
+	}//large loop
+
+	//Make all values positive
+	for(int i = 0; i<4; i++)
+	{
+
+		for(int x = 0; x<4; x++)
+		{
+			board[i][x] = Math.abs(board[i][x]);
+		}
+	}
+
+	//Return Score
+	return score;
+}//down end
+
+static int moveUp(int[][]board)
+{
+	//Moves numbers up if space, adds numbers if they are the same, adds to score if needed
+	int count = 0; //This variabe is used later to prevent the method from combining more numbers than it is supposed to
+	int score = 0;
+
+
+	//Enter large loop, repeated three times to make sure all numbers are moved
+	for(int z=0; z<3; z++)
+	{
+		count = 0;
+		for(int i = 0; i<3; i++)	//Column
+		{
+
+			count = 0;
+			for(int x = 0; x<4; x++)	//Row
+			{
+				if(board[i][x] == 0)
+				{
+					if(board[i+1][x] != 0)	//If open space and the number below is zero, shift up
+					{
+						board[i][x]=board[i+1][x];
+						board[i+1][x] = 0;
+					}
+				}
+				else if(board[i+1][x] == board[i][x])	//If the numbers are the same, attempt to add them
+				{
+
+					if(count < 2 && board[i][x]>0)	//Add numbers unless there have been more additions than allowed
+					{
+						board[i][x] = -(board[i][x]+board[i+1][x]);
+						board[i+1][x] = 0;
+						count++;
+						score = score + Math.abs(board[i][x]);	//Increment score
+					}
+				}
+			}//Row loop end
+		}//Column loop end
+	}//Large loop end
+
+	//Make all values positive
+	for(int i = 0; i<4; i++)
+	{
+
+		for(int x = 0; x<4; x++)
+		{
+			board[i][x] = Math.abs(board[i][x]);
+		}
+	}
+
+	//Return Score
+	return score;
+}//up end
+
+static boolean checkSame(int[][]board, int[][]board2)
+{
+	//This method will return a value depicting if the board has changed at all
+	for(int i = 0; i<4; i++)
+	{
+		for(int x = 0; x<4; x++)
+		{
+			//Return false if they are not the same
+			if(board[i][x] != board2[i][x])
+				return false;
+		}
+	}
+
+	//return true if same
+	return true;
+
+}//checkSame end
+
+
+
+static void printBoard(int[][]board)
+{
+	//Variables
+		int length;
+		int diff;
+
+
+	//Print board
+	for(int i = 0; i<4; i++)
+	{
+		System.out.println();
+		for(int x = 0; x<4; x++)
+		{
+			length = String.valueOf(board[i][x]).length();
+			diff = 4-length;
+			if(diff == 4)
+				System.out.print("0000" + board[i][x] + "\t");
+			else if(diff == 3)
+				System.out.print("000" + board[i][x] + "\t");
+			else if(diff == 2)
+				System.out.print("00" + board[i][x] + "\t");
+			else if(diff == 1)
+				System.out.print("0" + board[i][x] + "\t");
+			else
+				System.out.print(board[i][x] + "\t");
+
+		}
+	}
+}//print board end
+
+
+/*
+Notes:
+	High score: 3076
+
+
+
+
+*/
+
+}//End Program
